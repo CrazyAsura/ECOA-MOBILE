@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Shield, Key, Fingerprint, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function SecurityScreen() {
   const router = useRouter();
+  const { isDark } = useTheme();
 
   const OPTIONS = [
     { icon: Key, label: 'Alterar Senha', sub: 'Última alteração há 3 meses' },
@@ -13,21 +15,30 @@ export default function SecurityScreen() {
     { icon: Shield, label: 'Verificação em Duas Etapas', sub: 'Aumente sua segurança' },
   ];
 
+  const dynamicStyles = {
+    container: { backgroundColor: isDark ? '#0A0A0A' : '#F8F9FA' },
+    title: { color: isDark ? '#FFF' : '#000' },
+    item: { backgroundColor: isDark ? '#161616' : '#FFF', borderColor: isDark ? '#222' : '#EEE' },
+    label: { color: isDark ? '#FFF' : '#000' },
+    infoBox: { backgroundColor: isDark ? '#0D0D0D' : '#FFF', borderColor: '#00FF9C' },
+    infoTitle: { color: isDark ? '#FFF' : '#000' },
+  };
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={[styles.container, dynamicStyles.container]} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <ChevronLeft color="#00FF9C" size={30} />
         </TouchableOpacity>
-        <Text style={styles.title}>Segurança & Privacidade</Text>
+        <Text style={[styles.title, dynamicStyles.title]}>Segurança & Privacidade</Text>
       </View>
 
       <View style={styles.menu}>
         {OPTIONS.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.item}>
+          <TouchableOpacity key={index} style={[styles.item, dynamicStyles.item]}>
             <View style={styles.iconBox}><item.icon size={22} color="#00FF9C" /></View>
             <View style={styles.body}>
-              <Text style={styles.label}>{item.label}</Text>
+              <Text style={[styles.label, dynamicStyles.label]}>{item.label}</Text>
               <Text style={styles.sub}>{item.sub}</Text>
             </View>
             <ChevronRight color="#333" size={20} />
@@ -35,9 +46,9 @@ export default function SecurityScreen() {
         ))}
       </View>
 
-      <View style={styles.infoBox}>
+      <View style={[styles.infoBox, dynamicStyles.infoBox]}>
         <Shield size={40} color="#00FF9C" style={{ marginBottom: 15 }} />
-        <Text style={styles.infoTitle}>Seus dados estão protegidos</Text>
+        <Text style={[styles.infoTitle, dynamicStyles.infoTitle]}>Seus dados estão protegidos</Text>
         <Text style={styles.infoText}>Utilizamos criptografia ponta a ponta (AES-256) em todas as localizações e descrições de queixas enviadas.</Text>
       </View>
     </ScrollView>
@@ -45,17 +56,18 @@ export default function SecurityScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0A' },
+  container: { flex: 1 },
   content: { paddingBottom: 100 },
   header: { flexDirection: 'row', alignItems: 'center', paddingTop: 60, paddingHorizontal: 24, gap: 15, marginBottom: 40 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#FFF' },
+  backBtn: { width: 44, height: 44, borderRadius: 15, backgroundColor: 'rgba(0, 255, 156, 0.1)', justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: 22, fontWeight: 'bold' },
   menu: { paddingHorizontal: 24, gap: 15 },
-  item: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#161616', padding: 20, borderRadius: 24, borderWidth: 1, borderColor: '#222' },
+  item: { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 24, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
   iconBox: { width: 45, height: 45, borderRadius: 14, backgroundColor: 'rgba(0, 255, 156, 0.05)', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
   body: { flex: 1 },
-  label: { color: '#FFF', fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  label: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
   sub: { color: '#666', fontSize: 13 },
-  infoBox: { margin: 24, marginTop: 50, padding: 30, backgroundColor: '#0D0D0D', borderRadius: 30, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: '#00FF9C' },
-  infoTitle: { color: '#FFF', fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
+  infoBox: { margin: 24, marginTop: 50, padding: 30, borderRadius: 30, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1 },
+  infoTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
   infoText: { color: '#888', textAlign: 'center', lineHeight: 20, fontSize: 14 }
 });

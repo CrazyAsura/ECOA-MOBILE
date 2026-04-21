@@ -1,87 +1,107 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Motion } from '@legendapp/motion';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import api from '../../services/api';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '@/store/slices/authSlice';
+
+// Gluestack Components
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+
+import { useTheme } from '@/context/ThemeContext';
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
+  const { isDark } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Atenção", "Preencha todos os campos.");
+      Alert.alert(t('welcome'), 'Preencha todos os campos.');
       return;
     }
 
     setLoading(true);
     try {
       const response = await api.post('/users/login', { email, password });
-      
-      if (response.data.error) {
-        Alert.alert("Erro", "Credenciais inválidas.");
+      const { user, token } = response.data;
+
+      if (!user) {
+        Alert.alert('Erro', 'Credenciais inválidas.');
       } else {
-        // Sucesso: Redireciona para o app
+        dispatch(setCredentials({ user, token }));
         router.replace('/history');
       }
-    } catch (error) {
-      Alert.alert("Erro", "Falha na conexão com o servidor.");
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'Falha na conexão.';
+      Alert.alert('Erro', msg);
     } finally {
       setLoading(false);
     }
   };
 
+  const dynamicStyles = {
+    container: { backgroundColor: isDark ? '#0A0A0A' : '#F8F9FA' },
+    title: { color: isDark ? '#FFF' : '#000' },
+    inputBg: isDark ? 'bg-[#161616]' : 'bg-white',
+    inputBorder: isDark ? 'border-[#222]' : 'border-[#EEE]',
+    inputText: isDark ? 'text-white' : 'text-black',
+  };
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Motion.View initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={styles.header}>
+    <ScrollView style={[styles.container, dynamicStyles.container]} contentContainerStyle={styles.content}>
+
+      <Motion.View initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} style={styles.header}>
         <Text style={styles.logoText}>ECOA</Text>
-        <Text style={styles.title}>Bem-vindo!</Text>
+        <Text style={[styles.title, dynamicStyles.title]}>{t('welcome')}</Text>
       </Motion.View>
 
       <View style={styles.form}>
-        <View style={styles.inputBox}>
-          <Mail size={20} color="#666" />
-          <TextInput 
-            placeholder="E-mail" 
-            placeholderTextColor="#666" 
-            style={styles.input} 
+        <Input className={`${dynamicStyles.inputBorder} ${dynamicStyles.inputBg} h-[65px] rounded-[20px] border shadow-sm`}>
+          <InputSlot className="pl-4"><InputIcon as={Mail} color="#666" /></InputSlot>
+          <InputField 
+            placeholder={t('email')} 
+            className={`${dynamicStyles.inputText} placeholder:text-[#666]`} 
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
           />
-        </View>
+        </Input>
 
-        <View style={styles.inputBox}>
-          <Lock size={20} color="#666" />
-          <TextInput 
-            placeholder="Senha" 
-            placeholderTextColor="#666" 
+        <Input className={`${dynamicStyles.inputBorder} ${dynamicStyles.inputBg} h-[65px] rounded-[20px] border shadow-sm`}>
+          <InputSlot className="pl-4"><InputIcon as={Lock} color="#666" /></InputSlot>
+          <InputField 
+            placeholder={t('password')} 
+            className={`${dynamicStyles.inputText} placeholder:text-[#666]`} 
             secureTextEntry={!showPassword} 
-            style={styles.input} 
             value={password}
             onChangeText={setPassword}
           />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            {showPassword ? <EyeOff size={20} color="#666" /> : <Eye size={20} color="#666" />}
-          </TouchableOpacity>
-        </View>
+          <InputSlot className="pr-4" onPress={() => setShowPassword(!showPassword)}>
+             <InputIcon as={showPassword ? EyeOff : Eye} color="#666" />
+          </InputSlot>
+        </Input>
 
         <TouchableOpacity onPress={() => router.push('/auth/reset-password')} style={styles.forgotBtn}>
-          <Text style={styles.forgotText}>Esqueceu a senha?</Text>
+          <Text style={styles.forgotText}>{t('forgot_password')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loading}>
-          {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.loginBtnText}>Entrar</Text>}
+          {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.loginBtnText}>{t('enter')}</Text>}
         </TouchableOpacity>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Novo por aqui? </Text>
+          <Text style={styles.footerText}>{t('new_here')} </Text>
           <TouchableOpacity onPress={() => router.push('/auth/register')}>
-            <Text style={styles.signupText}>Criar Conta</Text>
+            <Text style={styles.signupText}>{t('create_account')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -90,17 +110,15 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0A' },
+  container: { flex: 1 },
   content: { padding: 30, paddingTop: 100 },
   header: { marginBottom: 50 },
   logoText: { color: '#00FF9C', fontSize: 28, fontWeight: '900', letterSpacing: 4, marginBottom: 20 },
-  title: { color: '#FFF', fontSize: 32, fontWeight: 'bold' },
+  title: { fontSize: 32, fontWeight: 'bold' },
   form: { gap: 20 },
-  inputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#161616', borderRadius: 18, height: 65, paddingHorizontal: 20, gap: 15, borderWidth: 1, borderColor: '#222' },
-  input: { flex: 1, color: '#FFF', fontSize: 16 },
   forgotBtn: { alignSelf: 'flex-end' },
   forgotText: { color: '#00FF9C', fontSize: 14 },
-  loginBtn: { backgroundColor: '#00FF9C', height: 65, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginTop: 10 },
+  loginBtn: { backgroundColor: '#00FF9C', height: 65, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginTop: 10, shadowColor: '#00FF9C', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
   loginBtnText: { color: '#000', fontSize: 18, fontWeight: 'bold' },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 30 },
   footerText: { color: '#666' },

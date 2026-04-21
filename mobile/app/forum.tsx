@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, TextInput } from 'react-native';
 import { Motion } from '@legendapp/motion';
-import { MessageSquare, Heart, ThumbsDown, Eye, Search, Filter } from 'lucide-react-native';
+import { MessageSquare, Heart, ThumbsDown, Eye, Search, Filter, Plus } from 'lucide-react-native';
 import api from '../services/api';
 
 interface Post {
@@ -16,9 +16,14 @@ interface Post {
   createdAt: string;
 }
 
+import { useTheme } from '@/context/ThemeContext';
+import { useRouter } from 'expo-router';
+
 const CATEGORIES = ['Tudo', 'Informativo', 'Sugestão', 'Dúvida', 'Elogio'];
 
 export default function ForumScreen() {
+  const { isDark } = useTheme();
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -36,7 +41,6 @@ export default function ForumScreen() {
       const res = await api.get(`/forum?page=${currentPage}&limit=5${categoryParam}${searchParam}`);
       
       const newItems = res.data?.items || [];
-      // No backend atual lastPage está na raiz do objeto retornado
       const lastPage = res.data?.lastPage || 1;
       
       if (reset) {
@@ -77,20 +81,42 @@ export default function ForumScreen() {
     } catch (e) {}
   };
 
-  if (loading && page === 1) return <View style={styles.centered}><ActivityIndicator color="#00FF9C" size="large" /></View>;
+  if (loading && page === 1) return <View style={[styles.centered, { backgroundColor: isDark ? '#0A0A0A' : '#F8F9FA' }]}><ActivityIndicator color="#00FF9C" size="large" /></View>;
+
+  const dynamicStyles = {
+    container: { backgroundColor: isDark ? '#0A0A0A' : '#F8F9FA' },
+    title: { color: isDark ? '#FFF' : '#000' },
+    searchContainer: { 
+      backgroundColor: isDark ? '#161616' : '#FFF', 
+      borderColor: isDark ? '#222' : '#EEE' 
+    },
+    searchInput: { color: isDark ? '#FFF' : '#000' },
+    filterChip: { 
+      backgroundColor: isDark ? '#161616' : '#FFF', 
+      borderColor: isDark ? '#222' : '#EEE' 
+    },
+    postCard: { 
+      backgroundColor: isDark ? '#161616' : '#FFF', 
+      borderColor: isDark ? '#222' : '#EEE' 
+    },
+    userName: { color: isDark ? '#FFF' : '#000' },
+    postContent: { color: isDark ? '#DDD' : '#444' },
+    loadMore: { backgroundColor: isDark ? '#222' : '#FFF', borderColor: isDark ? '#222' : '#EEE', borderWidth: isDark ? 0 : 1 },
+    footer: { borderTopColor: isDark ? '#222' : '#EEE' }
+  };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, dynamicStyles.container]}>
       <ScrollView 
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchPosts(true)} tintColor="#00FF9C" />}
       >
-        <Text style={styles.title}>Comunidade</Text>
+        <Text style={[styles.title, dynamicStyles.title]}>Comunidade</Text>
         
-        <View style={styles.searchContainer}>
+        <View style={[styles.searchContainer, dynamicStyles.searchContainer]}>
           <Search size={20} color="#666" style={styles.searchIcon} />
           <TextInput 
-            style={styles.searchInput}
+            style={[styles.searchInput, dynamicStyles.searchInput]}
             placeholder="Pesquisar posts..."
             placeholderTextColor="#666"
             value={search}
@@ -102,10 +128,10 @@ export default function ForumScreen() {
            {CATEGORIES.map(cat => (
              <TouchableOpacity 
               key={cat} 
-              style={[styles.filterChip, selectedCategory === cat && styles.filterChipActive]}
+              style={[styles.filterChip, dynamicStyles.filterChip, selectedCategory === cat && styles.filterChipActive]}
               onPress={() => setSelectedCategory(cat)}
              >
-               <Text style={[styles.filterText, selectedCategory === cat && styles.filterTextActive]}>{cat}</Text>
+                <Text style={[styles.filterText, selectedCategory === cat && styles.filterTextActive]}>{cat}</Text>
              </TouchableOpacity>
            ))}
         </ScrollView>
@@ -115,81 +141,94 @@ export default function ForumScreen() {
              <Text style={styles.emptyText}>Nenhum post encontrado nesta categoria.</Text>
           ) : (
             (posts || []).map((post) => (
-              <Motion.View key={post.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={styles.postCard}>
-                <View style={styles.postHeader}>
-                  <View style={styles.avatar}><Text style={styles.avatarTxt}>{post.userName ? post.userName[0] : 'U'}</Text></View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.userName}>{post.userName || 'Membro ECOA'}</Text>
-                    <Text style={styles.postDate}>{post.category || 'Geral'} • {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '--/--/----'}</Text>
+              <Motion.View key={post.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                <TouchableOpacity 
+                   style={[styles.postCard, dynamicStyles.postCard]}
+                   onPress={() => router.push(`/post/${post.id}` as any)}
+                >
+                  <View style={styles.postHeader}>
+                    <View style={styles.avatar}><Text style={styles.avatarTxt}>{post.userName ? post.userName[0] : 'U'}</Text></View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.userName, dynamicStyles.userName]}>{post.userName || 'Membro ECOA'}</Text>
+                      <Text style={styles.postDate}>{post.category || 'Geral'} • {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '--/--/----'}</Text>
+                    </View>
+                    <View style={styles.viewCount}>
+                      <Eye size={14} color="#666" />
+                      <Text style={styles.viewTxt}>{post.views || 0}</Text>
+                    </View>
                   </View>
-                  <View style={styles.viewCount}>
-                    <Eye size={14} color="#666" />
-                    <Text style={styles.viewTxt}>{post.views || 0}</Text>
-                  </View>
-                </View>
 
-                <Text style={styles.postContent}>{post.content}</Text>
+                  <Text style={[styles.postContent, dynamicStyles.postContent]}>{post.content}</Text>
 
-                <View style={styles.footer}>
-                  <View style={styles.actionsBox}>
-                    <TouchableOpacity style={styles.actionBtn} onPress={() => handleLike(post.id)}>
-                      <Heart size={18} color="#666" />
-                      <Text style={styles.actionTxt}>{post.likes || 0}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionBtn} onPress={() => handleDislike(post.id)}>
-                      <ThumbsDown size={18} color="#666" />
-                      <Text style={styles.actionTxt}>{post.dislikes || 0}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionBtn}>
-                      <MessageSquare size={18} color="#666" />
-                      <Text style={styles.actionTxt}>{post.commentsCount || 0}</Text>
-                    </TouchableOpacity>
+                  <View style={[styles.footer, dynamicStyles.footer]}>
+                    <View style={styles.actionsBox}>
+                      <TouchableOpacity style={styles.actionBtn} onPress={() => handleLike(post.id)}>
+                        <Heart size={18} color="#666" />
+                        <Text style={styles.actionTxt}>{post.likes || 0}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.actionBtn} onPress={() => handleDislike(post.id)}>
+                        <ThumbsDown size={18} color="#666" />
+                        <Text style={styles.actionTxt}>{post.dislikes || 0}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.actionBtn}>
+                        <MessageSquare size={18} color="#666" />
+                        <Text style={styles.actionTxt}>{post.commentsCount || 0}</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               </Motion.View>
             ))
           )}
         </View>
 
         {hasMore && !loading && (
-          <TouchableOpacity style={styles.loadMore} onPress={() => fetchPosts()}>
+          <TouchableOpacity style={[styles.loadMore, dynamicStyles.loadMore]} onPress={() => fetchPosts()}>
              <Text style={styles.loadMoreText}>Ver mais posts</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      <TouchableOpacity 
+        style={styles.fab}
+        onPress={() => router.push('/post/create' as any)}
+      >
+        <Plus size={30} color="#000" />
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0A' },
-  centered: { flex: 1, backgroundColor: '#0A0A0A', justifyContent: 'center', alignItems: 'center' },
+  container: { flex: 1 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   content: { padding: 24, paddingBottom: 150 },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#FFF', marginBottom: 20, paddingTop: 40 },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#161616', borderRadius: 15, paddingHorizontal: 15, height: 55, borderWidth: 1, borderColor: '#222', marginBottom: 20 },
+  title: { fontSize: 32, fontWeight: 'bold', marginBottom: 20, paddingTop: 40 },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', borderRadius: 15, paddingHorizontal: 15, height: 55, borderWidth: 1, marginBottom: 20 },
   searchIcon: { marginRight: 10 },
-  searchInput: { flex: 1, color: '#FFF', fontSize: 16 },
+  searchInput: { flex: 1, fontSize: 16 },
   filtersScroll: { marginBottom: 25 },
   filtersContent: { gap: 10 },
-  filterChip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: '#161616', borderWidth: 1, borderColor: '#222' },
+  filterChip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, borderWidth: 1 },
   filterChipActive: { backgroundColor: '#00FF9C', borderColor: '#00FF9C' },
   filterText: { color: '#888', fontWeight: '600' },
   filterTextActive: { color: '#000' },
   feed: { gap: 16 },
-  postCard: { backgroundColor: '#161616', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#222' },
+  postCard: { borderRadius: 24, padding: 20, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
   postHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 15 },
-  avatar: { width: 44, height: 44, borderRadius: 15, backgroundColor: '#222', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#00FF9C' },
+  avatar: { width: 44, height: 44, borderRadius: 15, backgroundColor: 'rgba(0, 255, 156, 0.1)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#00FF9C' },
   avatarTxt: { color: '#00FF9C', fontWeight: 'bold', fontSize: 18 },
-  userName: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
+  userName: { fontWeight: 'bold', fontSize: 16 },
   postDate: { color: '#666', fontSize: 12 },
   viewCount: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   viewTxt: { color: '#666', fontSize: 12 },
-  postContent: { color: '#DDD', fontSize: 15, lineHeight: 22, marginBottom: 20 },
-  footer: { borderTopWidth: 1, borderTopColor: '#222', paddingTop: 15 },
+  postContent: { fontSize: 15, lineHeight: 22, marginBottom: 20 },
+  footer: { borderTopWidth: 1, paddingTop: 15 },
   actionsBox: { flexDirection: 'row', gap: 20 },
   actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   actionTxt: { color: '#666', fontSize: 14 },
-  loadMore: { marginTop: 30, backgroundColor: '#222', height: 55, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
+  loadMore: { marginTop: 30, height: 55, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
   loadMoreText: { color: '#00FF9C', fontWeight: 'bold' },
-  emptyText: { color: '#666', textAlign: 'center', marginTop: 40, fontSize: 16 }
+  emptyText: { color: '#666', textAlign: 'center', marginTop: 40, fontSize: 16 },
+  fab: { position: 'absolute', bottom: 110, right: 24, width: 65, height: 65, borderRadius: 20, backgroundColor: '#00FF9C', justifyContent: 'center', alignItems: 'center', shadowColor: '#00FF9C', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 }
 });

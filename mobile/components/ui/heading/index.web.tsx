@@ -18,6 +18,7 @@ const MappedHeading = memo(
       sub,
       italic,
       highlight,
+      numberOfLines,
       ...props
     },
     ref
@@ -158,7 +159,7 @@ const MappedHeading = memo(
 
 const Heading = memo(
   forwardRef<HTMLHeadingElement, IHeadingProps>(function Heading(
-    { className, size = 'lg', as: AsComp, ...props },
+    { className, size = 'lg', as: AsComp, numberOfLines, ...props },
     ref
   ) {
     const {

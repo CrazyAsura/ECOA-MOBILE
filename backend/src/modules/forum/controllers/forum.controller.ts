@@ -1,74 +1,83 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, Put, Query } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { ForumService } from '../services/forum.service';
 import { ForumPost } from '../entities/forum-post.entity';
-import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ForumComment } from '../entities/forum-comment.entity';
+import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Forum')
 @Controller('forum')
 export class ForumController {
-  constructor(
-    @InjectRepository(ForumPost)
-    private readonly repo: Repository<ForumPost>,
-  ) {}
+  constructor(private readonly forumService: ForumService) {}
 
   @Get()
-  async findAll(
+  findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('search') search?: string,
     @Query('category') category?: string,
   ) {
-    const where: any = {};
-    if (search) where.content = Like(`%${search}%`);
-    if (category) where.category = category;
-
-    const [items, total] = await this.repo.findAndCount({
-      where,
-      order: { createdAt: 'DESC' },
-      take: limit,
-      skip: (page - 1) * limit,
-    });
-
-    return { items, total, page, lastPage: Math.ceil(total / limit) };
+    return this.forumService.findAll(page, limit, search, category);
   }
 
   @Post()
   create(@Body() data: Partial<ForumPost>) {
-    const post = this.repo.create(data);
-    return this.repo.save(post);
+    return this.forumService.create(data);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.repo.findOne({ where: { id } });
+    return this.forumService.findOne(id);
   }
 
   @Put(':id')
   update(@Param('id') id: string, @Body() data: Partial<ForumPost>) {
-    return this.repo.update(id, data);
+    return this.forumService.update(id, data);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.repo.delete(id);
+    return this.forumService.remove(id);
   }
 
   @Patch(':id/like')
-  async like(@Param('id') id: string) {
-    await this.repo.increment({ id }, 'likes', 1);
-    return { success: true };
+  like(@Param('id') id: string) {
+    return this.forumService.like(id);
   }
 
   @Patch(':id/dislike')
-  async dislike(@Param('id') id: string) {
-    await this.repo.increment({ id }, 'dislikes', 1);
-    return { success: true };
+  dislike(@Param('id') id: string) {
+    return this.forumService.dislike(id);
   }
 
   @Patch(':id/view')
-  async view(@Param('id') id: string) {
-    await this.repo.increment({ id }, 'views', 1);
-    return { success: true };
+  view(@Param('id') id: string) {
+    return this.forumService.incrementView(id);
+  }
+
+  // --- Comments ---
+
+  @Post(':id/comments')
+  addComment(@Param('id') id: string, @Body() data: Partial<ForumComment>) {
+    return this.forumService.addComment(id, data);
+  }
+
+  @Get(':id/comments')
+  findComments(@Param('id') id: string) {
+    return this.forumService.findComments(id);
+  }
+
+  @Patch('comments/:commentId/like')
+  likeComment(@Param('commentId') commentId: string) {
+    return this.forumService.likeComment(commentId);
+  }
+
+  @Patch('comments/:commentId/dislike')
+  dislikeComment(@Param('commentId') commentId: string) {
+    return this.forumService.dislikeComment(commentId);
+  }
+
+  @Patch('comments/:commentId/report')
+  reportComment(@Param('commentId') commentId: string) {
+    return this.forumService.reportComment(commentId);
   }
 }

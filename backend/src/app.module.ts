@@ -7,6 +7,8 @@ import { UsersModule } from './modules/users/users.module';
 import { ForumModule } from './modules/forum/forum.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { AIModule } from './modules/ai/ai.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { RedisModule } from './modules/redis/redis.module';
     ComplaintsModule,
     ForumModule,
     CoursesModule,
+    AIModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

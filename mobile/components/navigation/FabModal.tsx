@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Pressable } from 'react-native';
+import { Plus, X, Camera, MapPin, Newspaper, BookOpen, Users } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { Motion } from '@legendapp/motion';
-import { X, ClipboardList, PenTool, Globe } from 'lucide-react-native';
-import { useRouter as useExpoRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 interface FabModalProps {
   isVisible: boolean;
@@ -10,100 +11,117 @@ interface FabModalProps {
   colorMode: 'light' | 'dark';
 }
 
-export const FabModal = ({ isVisible, onClose, colorMode }: FabModalProps) => {
+export function FabModal({ isVisible, onClose, colorMode }: FabModalProps) {
+  const { t } = useTranslation();
+  const router = useRouter();
   const isDark = colorMode === 'dark';
-  const router = useExpoRouter();
 
-  const actions = [
-    { 
-      icon: ClipboardList, 
-      label: 'Fazer Queixa', 
-      color: '#00FF9C',
-      onPress: () => {
-        onClose();
-        router.push('/make-complaint');
-      }
-    },
-    { 
-      icon: PenTool, 
-      label: 'Fazer Resenha', 
-      color: '#00FF9C',
-      onPress: () => onClose() 
-    },
-    { 
-      icon: Globe, 
-      label: 'Queixas Globais', 
-      color: '#00FF9C',
-      onPress: () => {
-        onClose();
-        router.push('/global-complaints');
-      }
-    },
+  const menuItems = [
+    { icon: Camera, title: 'Fazer Queixa', route: '/make-complaint', description: 'Registre um problema ambiental com fotos' },
+    { icon: Newspaper, title: 'Escrever Resenha', route: '/forum', description: 'Compartilhe suas ideias na comunidade' },
+    { icon: Users, title: 'Queixas Globais', route: '/global-complaints', description: 'Veja o que está acontecendo no mundo' },
   ];
 
-  if (!isVisible) return null;
+  const handleNavigate = (route: string) => {
+    onClose();
+    router.push(route as any);
+  };
 
   return (
-    <Modal
-      transparent
-      visible={isVisible}
-      animationType="none"
-      onRequestClose={onClose}
-    >
+    <Modal visible={isVisible} transparent animationType="fade">
       <Pressable style={styles.overlay} onPress={onClose}>
-        <Motion.View
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: 'spring', damping: 15 }}
-          style={[
-            styles.modalContainer,
-            { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }
-          ]}
+        <Motion.View 
+          initial={{ scale: 0.9, opacity: 0 }} 
+          animate={{ scale: 1, opacity: 1 }}
+          style={[styles.container, { backgroundColor: isDark ? '#161616' : '#FFF' }]}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>Ações ECOA</Text>
+            <Text style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>O que deseja fazer?</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <X size={20} color={isDark ? '#888' : '#666'} />
+              <X color={isDark ? '#666' : '#999'} size={24} />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.actionsGrid}>
-            {actions.map((action, index) => (
-              <Motion.View
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 100 * index }}
+          <View style={styles.list}>
+            {menuItems.map((item, index) => (
+              <TouchableOpacity 
+                key={index} 
+                style={[styles.listItem, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#F9F9F9', borderLeftColor: '#00FF9C' }]} 
+                onPress={() => handleNavigate(item.route)}
               >
-                <TouchableOpacity 
-                  style={[styles.actionItem, { borderLeftColor: action.color }]}
-                  activeOpacity={0.7}
-                  onPress={action.onPress}
-                >
-                  <View style={[styles.iconWrapper, { backgroundColor: isDark ? '#333' : '#F5F5F5' }]}>
-                    <action.icon size={24} color={action.color} />
-                  </View>
-                  <Text style={[styles.actionLabel, { color: isDark ? '#EEE' : '#333' }]}>
-                    {action.label}
-                  </Text>
-                </TouchableOpacity>
-              </Motion.View>
+                <View style={styles.iconCircle}>
+                  <item.icon color="#00FF9C" size={22} />
+                </View>
+                <View style={styles.itemText}>
+                  <Text style={[styles.itemTitle, { color: isDark ? '#FFF' : '#000' }]}>{item.title}</Text>
+                  <Text style={[styles.itemSub, { color: isDark ? '#666' : '#888' }]}>{item.description}</Text>
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
         </Motion.View>
       </Pressable>
     </Modal>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContainer: { width: '100%', maxWidth: 400, borderRadius: 30, padding: 24, borderWidth: 1, borderColor: '#333', elevation: 25 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  title: { fontSize: 20, fontWeight: 'bold', letterSpacing: 0.5 },
-  closeBtn: { padding: 5 },
-  actionsGrid: { gap: 15 },
-  actionItem: { flexDirection: 'row', alignItems: 'center', padding: 15, borderRadius: 20, borderLeftWidth: 4, backgroundColor: 'rgba(255,255,255,0.03)' },
-  iconWrapper: { width: 45, height: 45, borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
-  actionLabel: { fontSize: 16, fontWeight: '600' },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  container: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 35,
+    padding: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  closeBtn: {
+    padding: 5,
+  },
+  list: {
+    gap: 15,
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderRadius: 20,
+    borderLeftWidth: 4,
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0, 255, 156, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  itemText: {
+    flex: 1,
+  },
+  itemTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  itemSub: {
+    fontSize: 12,
+  },
 });

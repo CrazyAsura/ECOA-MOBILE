@@ -1,22 +1,49 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, ActivityIndicator, Alert } from 'react-native';
 import { Motion } from '@legendapp/motion';
 import { Award, Lock, CheckCircle2, Crown, ChevronLeft, Zap } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-
-const REWARDS = [
-  { level: 1, free: 'Título: Iniciante', premium: 'Borda: Neon Verde', unlocked: true },
-  { level: 2, free: '50 XP', premium: '200 XP', unlocked: true },
-  { level: 3, free: 'Ícone: Árvore', premium: 'Título: Eco-Guerreiro', unlocked: true },
-  { level: 4, free: '100 XP', premium: 'Borda: Ouro Reciclado', unlocked: false },
-  { level: 5, free: 'Título: Defensor', premium: 'Título: Protetor da Terra', unlocked: false },
-  { level: 6, free: '200 XP', premium: '500 XP', unlocked: false },
-];
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 export default function RewardPassScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
-  const [isPremium, setIsPremium] = useState(false);
-  const userLevel = 3;
+  const [loading, setLoading] = useState(true);
+  const [rewards, setRewards] = useState([]);
+  const [user, setUser] = useState({ level: 1, isPremium: false });
+
+  const fetchData = async () => {
+    try {
+      const storedUser = await AsyncStorage.getItem('user');
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        const userResp = await api.get(`/users/${parsed.id}`);
+        setUser(userResp.data);
+      }
+
+      const rewardsResp = await api.get('/users/reward-pass/levels');
+      setRewards(rewardsResp.data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Erro", "Falha ao carregar o Passe.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color="#00FF9C" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -25,35 +52,40 @@ export default function RewardPassScreen() {
           <ChevronLeft color="#FFF" size={24} />
         </TouchableOpacity>
         <View>
-          <Text style={styles.title}>Passe ECOA</Text>
-          <Text style={styles.subtitle}>Temporada 1: Renascimento</Text>
+          <Text style={styles.title}>{t('reward_pass')}</Text>
+          <Text style={styles.subtitle}>{t('season1')}</Text>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <ImageBackground 
-          source={{ uri: 'https://images.unsplash.com/photo-1542601906-973ad30ed289?q=80&w=1000&auto=format&fit=crop' }}
-          style={styles.heroCard}
-          imageStyle={{ borderRadius: 30, opacity: 0.6 }}
-        >
-          <View style={styles.heroOverlay}>
-             <Crown color="#FFD700" size={32} fill="#FFD700" />
-             <Text style={styles.heroTitle}>Upgrade para Premium</Text>
-             <Text style={styles.heroDesc}>Desbloqueie molduras exclusivas e 3x mais XP.</Text>
-             <TouchableOpacity style={styles.premiumBtn}>
-                <Text style={styles.premiumBtnTxt}>Quero ser Premium</Text>
-             </TouchableOpacity>
-          </View>
-        </ImageBackground>
+        {!user.isPremium && (
+          <ImageBackground 
+            source={{ uri: 'https://images.unsplash.com/photo-1542601906-973ad30ed289?q=80&w=1000&auto=format&fit=crop' }}
+            style={styles.heroCard}
+            imageStyle={{ borderRadius: 30, opacity: 0.6 }}
+          >
+            <View style={styles.heroOverlay}>
+              <Crown color="#FFD700" size={32} fill="#FFD700" />
+              <Text style={styles.heroTitle}>{t('upgrade_premium')}</Text>
+              <Text style={styles.heroDesc}>{t('upgrade_desc')}</Text>
+              <TouchableOpacity style={styles.premiumBtn}>
+                  <Text style={styles.premiumBtnTxt}>{t('be_premium')}</Text>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
+        )}
 
         <View style={styles.trackTop}>
-          <Text style={styles.trackTitle}>Progresso do Passe</Text>
-          <Text style={styles.levelBadge}>Nv. {userLevel}</Text>
+          <Text style={styles.trackTitle}>{t('pass_progress')}</Text>
+          <View style={styles.levelBadgeBox}>
+            {user.isPremium && <Crown size={12} color="#FFD700" fill="#FFD700" />}
+            <Text style={styles.levelBadge}>{t('level')} {user.level}</Text>
+          </View>
         </View>
 
         <View style={styles.levelsList}>
-          {REWARDS.map((item, index) => {
-            const isReached = userLevel >= item.level;
+          {rewards.map((item: any, index: number) => {
+            const isReached = user.level >= item.level;
             return (
               <Motion.View 
                 key={item.level} 
@@ -64,29 +96,27 @@ export default function RewardPassScreen() {
               >
                 <View style={styles.levelMarker}>
                   <Text style={styles.levelNum}>{item.level}</Text>
-                  <View style={[styles.connector, index === REWARDS.length - 1 && { height: 0 }]} />
+                  <View style={[styles.connector, index === rewards.length - 1 && { height: 0 } ]} />
                 </View>
 
                 <View style={styles.rewardsBox}>
-                  {/* Free Track */}
                   <View style={styles.rewardCard}>
                     <View style={styles.rewardInfo}>
-                      <Text style={styles.rewardLabel}>GRÁTIS</Text>
+                      <Text style={styles.rewardLabel}>{t('free')}</Text>
                       <Text style={styles.rewardName}>{item.free}</Text>
                     </View>
                     {isReached ? <CheckCircle2 color="#00FF9C" size={20} /> : <Lock color="#333" size={18} />}
                   </View>
 
-                  {/* Premium Track */}
                   <View style={[styles.rewardCard, styles.premiumCard]}>
                     <View style={styles.rewardInfo}>
                       <View style={styles.premiumRow}>
                         <Crown color="#FFD700" size={10} fill="#FFD700" />
-                        <Text style={[styles.rewardLabel, { color: '#FFD700' }]}>PREMIUM</Text>
+                        <Text style={[styles.rewardLabel, { color: '#FFD700' }]}>{t('premium')}</Text>
                       </View>
                       <Text style={styles.rewardName}>{item.premium}</Text>
                     </View>
-                    {isReached && isPremium ? <CheckCircle2 color="#FFD700" size={20} /> : <Lock color="#FFD700" size={18} opacity={0.5} />}
+                    {isReached && user.isPremium ? <CheckCircle2 color="#FFD700" size={20} /> : <Lock color="#FFD700" size={18} opacity={0.5} />}
                   </View>
                 </View>
               </Motion.View>
@@ -113,7 +143,8 @@ const styles = StyleSheet.create({
   premiumBtnTxt: { color: '#000', fontWeight: 'bold' },
   trackTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 },
   trackTitle: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
-  levelBadge: { backgroundColor: '#1A1A1A', color: '#00FF9C', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, fontWeight: 'bold' },
+  levelBadgeBox: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#1A1A1A', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8 },
+  levelBadge: { color: '#00FF9C', fontWeight: 'bold' },
   levelsList: { gap: 0 },
   levelRow: { flexDirection: 'row', marginBottom: 35 },
   lockedRow: { opacity: 0.5 },

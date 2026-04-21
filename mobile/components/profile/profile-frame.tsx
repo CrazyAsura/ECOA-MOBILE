@@ -13,26 +13,20 @@ export const ProfileFrame = ({ photoUrl, frameUrl, size = 120 }: ProfileFramePro
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      {/* Background/Photo */}
       <View style={[styles.photoWrapper, { borderRadius: size / 2, padding }]}>
         <Image 
           source={{ uri: photoUrl || 'https://i.pravatar.cc/300' }} 
           style={[styles.photo, { borderRadius: size / 2 }]} 
         />
       </View>
-
-      {/* Frame Overlay */}
-      {frameUrl && (
+      {frameUrl ? (
         <Motion.Image 
-          initial={{ rotate: -10, scale: 0.9 }}
-          animate={{ rotate: 0, scale: 1 }}
+          initial={{ rotate: '-10deg', scale: 0.9 }}
+          animate={{ rotate: '0deg', scale: 1 }}
           source={{ uri: frameUrl }} 
           style={[styles.frame, { width: size, height: size }]} 
         />
-      )}
-
-      {/* Default Cinematic Glow for high level */}
-      {!frameUrl && (
+      ) : (
         <View style={[styles.glow, { width: size, height: size, borderRadius: size / 2 }]} />
       )}
     </View>

@@ -1,10 +1,7 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { ClipboardList, BookOpen, Plus, MessageSquare, User } from 'lucide-react-native';
-import { Motion } from '@legendapp/motion';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const { width } = Dimensions.get('window');
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Home, History, MessageSquare, User, Plus, BookOpen } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 interface BottomBarProps {
   colorMode: 'light' | 'dark';
@@ -13,141 +10,84 @@ interface BottomBarProps {
   onFabPress: () => void;
 }
 
-const NAV_ITEMS = [
-  { id: 'history', icon: ClipboardList, label: 'Queixas' },
-  { id: 'courses', icon: BookOpen, label: 'Cursos' },
-  { id: 'fab', isFab: true },
-  { id: 'forum', icon: MessageSquare, label: 'Fórum' },
-  { id: 'profile', icon: User, label: 'Perfil' },
-];
-
-export const BottomBar = ({ colorMode, activeTab, onTabPress, onFabPress }: BottomBarProps) => {
-  const insets = useSafeAreaInsets();
+export function BottomBar({ colorMode, activeTab, onTabPress, onFabPress }: BottomBarProps) {
+  const { t } = useTranslation();
   const isDark = colorMode === 'dark';
 
   return (
-    <Motion.View 
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-      style={[
-        styles.container,
-        {
-          paddingBottom: insets.bottom + 10,
-          backgroundColor: isDark ? 'rgba(10, 10, 10, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-          borderTopColor: isDark ? '#333' : '#EEE',
-        }
-      ]}
-    >
-      <View style={styles.content}>
-        {NAV_ITEMS.map((item) => {
-          if (item.isFab) {
-            return (
-              <TouchableOpacity
-                key="fab"
-                onPress={onFabPress}
-                activeOpacity={0.8}
-                style={styles.fabContainer}
-              >
-                <Motion.View
-                  animate={{
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    type: 'timing',
-                    duration: 2000,
-                  }}
-                  // @ts-ignore - legendapp motion handling pulse
-                  repeat={Infinity}
-                  style={styles.fab}
-                >
-                  <Plus color="#000" size={32} strokeWidth={2.5} />
-                </Motion.View>
-              </TouchableOpacity>
-            );
-          }
+    <View style={[styles.container, { backgroundColor: isDark ? '#111' : '#FFF', borderTopColor: isDark ? '#222' : '#EEE' }]}>
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => onTabPress('history')}
+      >
+        <History size={24} color={activeTab === 'history' ? '#00FF9C' : '#666'} />
+        <Text style={[styles.tabLabel, activeTab === 'history' && styles.activeTabLabel]}>{t('history')}</Text>
+      </TouchableOpacity>
 
-          const isActive = activeTab === item.id;
-          const Icon = item.icon!;
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => onTabPress('courses')}
+      >
+        <BookOpen size={24} color={activeTab === 'courses' ? '#00FF9C' : '#666'} />
+        <Text style={[styles.tabLabel, activeTab === 'courses' && styles.activeTabLabel]}>{t('courses')}</Text>
+      </TouchableOpacity> 
 
-          return (
-            <TouchableOpacity
-              key={item.id}
-              onPress={() => onTabPress(item.id)}
-              style={styles.tabItem}
-              activeOpacity={0.6}
-            >
-              <Motion.View
-                animate={{
-                  scale: isActive ? 1.2 : 1,
-                  y: isActive ? -4 : 0,
-                }}
-                transition={{ type: 'spring' }}
-                style={styles.iconContainer}
-              >
-                <Icon 
-                  size={24} 
-                  color={isActive ? '#00FF9C' : (isDark ? '#888' : '#666')} 
-                  strokeWidth={isActive ? 2.5 : 2}
-                />
-              </Motion.View>
-              {isActive && (
-                <Motion.View
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  style={[styles.indicator, { backgroundColor: '#00FF9C' }]}
-                />
-              )}
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </Motion.View>
+      <TouchableOpacity 
+        style={styles.fabContainer} 
+        onPress={onFabPress}
+        activeOpacity={0.8}
+      >
+        <View style={styles.fab}>
+          <Plus color="#000" size={32} />
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => onTabPress('forum')}
+      >
+        <MessageSquare size={24} color={activeTab === 'forum' ? '#00FF9C' : '#666'} />
+        <Text style={[styles.tabLabel, activeTab === 'forum' && styles.activeTabLabel]}>{t('forum')}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => onTabPress('profile')}
+      >
+        <User size={24} color={activeTab === 'profile' ? '#00FF9C' : '#666'} />
+        <Text style={[styles.tabLabel, activeTab === 'profile' && styles.activeTabLabel]}>{t('profile')}</Text>
+      </TouchableOpacity>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    paddingTop: 15,
-    borderTopWidth: 0.5,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  content: {
+    height: 90,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-around',
-    paddingHorizontal: 10,
+    alignItems: 'center',
+    paddingBottom: 20,
+    borderTopWidth: 1,
   },
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    height: 50,
   },
-  iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  tabLabel: {
+    fontSize: 10,
+    marginTop: 4,
+    color: '#666',
   },
-  indicator: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    position: 'absolute',
-    bottom: -8,
+  activeTabLabel: {
+    color: '#00FF9C',
+    fontWeight: 'bold',
   },
   fabContainer: {
-    top: -35,
-    flex: 1,
-    alignItems: 'center',
+    top: -20,
   },
   fab: {
     width: 65,
@@ -156,12 +96,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#00FF9C',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
-    borderColor: '#0A0A0A',
-    elevation: 10,
     shadowColor: '#00FF9C',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 10,
+    elevation: 5,
   },
 });

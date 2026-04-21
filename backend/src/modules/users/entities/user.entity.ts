@@ -1,7 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, JoinColumn, OneToMany, BeforeInsert } from 'typeorm';
-import * as argon2 from 'argon2';
-import { Address } from '../../addresses/entities/address.entity';
-import { Phone } from '../../phones/entities/phone.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Complaint } from '../../complaints/entities/complaint.entity';
+import { UserGender, UserEthnicity, UserRole } from '../enums/user.enums';
+import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class User {
@@ -12,6 +12,7 @@ export class User {
   email: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @Column({ nullable: true })
@@ -20,16 +21,30 @@ export class User {
   @Column({ nullable: true })
   identity: string;
 
-  @Column({ nullable: true })
-  gender: string;
+  @Column({
+    type: 'simple-enum',
+    enum: UserGender,
+    default: UserGender.OUTRO,
+  })
+  gender: UserGender;
 
-  @Column({ nullable: true })
-  ethnicity: string;
+  @Column({
+    type: 'simple-enum',
+    enum: UserEthnicity,
+    default: UserEthnicity.PARDA,
+  })
+  ethnicity: UserEthnicity;
 
   @Column({ type: 'date', nullable: true })
-  birthDate: Date;
+  birthDate: string;
 
-  // Gamificação
+  @Column({
+    type: 'simple-enum',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
+  role: UserRole;
+
   @Column({ default: 0 })
   xp: number;
 
@@ -45,20 +60,30 @@ export class User {
   @Column({ nullable: true })
   avatarFrame: string;
 
-  @OneToOne(() => Address, { cascade: true, eager: true })
-  @JoinColumn()
-  address: Address;
+  @Column('simple-json', { nullable: true })
+  address: {
+    zipCode: string;
+    street: string;
+    city: string;
+    state: string;
+    district: string;
+    country: string;
+    number: string;
+  };
 
-  @OneToMany(() => Phone, (phone) => phone.user, { cascade: true, eager: true })
-  phones: Phone[];
+  @Column('simple-json', { nullable: true })
+  phones: {
+    ddi: string;
+    ddd: string;
+    number: string;
+  }[];
+
+  @OneToMany(() => Complaint, (complaint) => complaint.user)
+  complaints: Complaint[];
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @BeforeInsert()
-  async hashPassword() {
-    if (this.password) {
-      this.password = await argon2.hash(this.password);
-    }
-  }
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

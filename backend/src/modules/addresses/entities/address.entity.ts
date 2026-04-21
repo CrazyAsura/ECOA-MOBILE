@@ -27,6 +27,9 @@ export class Address {
   @Column()
   state: string;
 
+  @Column({ default: 'Brasil' })
+  country: string;
+
   @OneToOne(() => User, (user) => user.address)
   user: User;
 }

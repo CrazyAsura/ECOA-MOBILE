@@ -7,6 +7,9 @@ import { Phone } from '../modules/phones/entities/phone.entity';
 import { Complaint } from '../modules/complaints/entities/complaint.entity';
 import { ForumPost } from '../modules/forum/entities/forum-post.entity';
 import { Course } from '../modules/courses/entities/course.entity';
+import { UserGender, UserEthnicity, UserRole } from '../modules/users/enums/user.enums';
+import { PollutionType, ComplaintStatus } from '../modules/complaints/enums/complaint.enums';
+import * as argon2 from 'argon2';
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -20,22 +23,24 @@ async function bootstrap() {
   const courseRepo = dataSource.getRepository(Course);
 
   // 1. Limpeza total (Ordem correta para evitar erros de FK)
-  await dataSource.getRepository(Phone).delete({});
-  await dataSource.getRepository(Address).delete({});
-  await dataSource.getRepository(ForumPost).delete({});
-  await dataSource.getRepository(Course).delete({});
-  await dataSource.getRepository(Complaint).delete({});
-  await dataSource.getRepository(User).delete({});
+  await dataSource.getRepository(Phone).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(Address).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(ForumPost).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(Course).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(Complaint).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(User).createQueryBuilder().delete().execute();
 
   // 2. Criar Usuário Admin com Endereço e Telefone
+  const hashedPassword = await argon2.hash('password123');
   const adminData: any = {
     email: 'admin@ecoa.app',
-    password: 'password123',
+    password: hashedPassword,
     realName: 'Matheus Leon',
     identity: '123.456.789-00',
-    gender: 'Masculino',
-    ethnicity: 'Pardo',
-    birthDate: new Date('1995-10-25'),
+    gender: UserGender.MASCULINO,
+    ethnicity: UserEthnicity.PARDA,
+    birthDate: '1995-10-25',
+    role: UserRole.ADMIN,
     xp: 2500,
     level: 3,
     activeTitle: 'Mestre da Reciclagem',
@@ -60,19 +65,17 @@ async function bootstrap() {
   // 3. Criar Queixas
   await complaintRepo.save([
     { 
-      title: 'Descarte em Terreno Baldio', 
+      type: PollutionType.URBANO, 
       description: 'Acúmulo de entulho e lixo eletrônico atraindo roedores.',
       location: 'Rua das Flores, 450',
-      status: 'pending',
-      isPublic: false,
+      status: ComplaintStatus.PENDENTE,
       user: admin
     },
     { 
-      title: 'Poluição Rio Pinheiros', 
+      type: PollutionType.AGUA, 
       description: 'Mancha de óleo detectada perto da ponte.',
       location: 'Marginal Pinheiros',
-      status: 'analyzing',
-      isPublic: true,
+      status: ComplaintStatus.EM_ANALISE,
       user: admin
     }
   ] as any);

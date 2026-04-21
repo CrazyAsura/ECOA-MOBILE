@@ -1,8 +1,14 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { Moon, Sun } from 'lucide-react-native';
 import { Motion } from '@legendapp/motion';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Gluestack Components
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
+import { HStack } from '@/components/ui/hstack';
+import { NotificationBell } from '@/components/navigation/NotificationBell';
 
 interface TopBarProps {
   colorMode: 'light' | 'dark';
@@ -18,71 +24,51 @@ export const TopBar = ({ colorMode, toggleColorMode }: TopBarProps) => {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'timing', duration: 800 }}
-      style={[
-        styles.container, 
-        { 
+    >
+      <Box 
+        className="px-5 pb-4 border-b-[0.5px] z-100"
+        style={{ 
           paddingTop: insets.top + 10,
           backgroundColor: isDark ? '#0A0A0A' : '#FFFFFF',
-          borderBottomColor: isDark ? '#333' : '#EEE'
-        }
-      ]}
-    >
-      <View style={styles.content}>
-        <Motion.View
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 300 }}
-        >
-          <Text style={[styles.logo, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-            ECOA<Text style={styles.dot}>.</Text>
-          </Text>
-        </Motion.View>
-
-        <TouchableOpacity 
-          onPress={toggleColorMode}
-          activeOpacity={0.7}
-          style={[styles.toggleBtn, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}
-        >
+          borderBottomColor: isDark ? '#222' : '#EEE'
+        }}
+      >
+        <HStack className="justify-between items-center">
           <Motion.View
-            key={colorMode}
-            initial={{ opacity: 0, rotate: '90deg', scale: 0.5 }}
-            animate={{ opacity: 1, rotate: '0deg', scale: 1 }}
-            transition={{ type: 'spring' }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 300 }}
           >
-            {isDark ? (
-              <Sun size={20} color="#00FF9C" />
-            ) : (
-              <Moon size={20} color="#00FF9C" />
-            )}
+            <Text className="text-2xl font-black tracking-widest" style={{ color: isDark ? '#FFFFFF' : '#000000' }}>
+              ECOA<Text className="text-[#00FF9C]">.</Text>
+            </Text>
           </Motion.View>
-        </TouchableOpacity>
-      </View>
+
+          <HStack className="items-center gap-3">
+            <NotificationBell isDark={isDark} />
+
+            <TouchableOpacity 
+              onPress={toggleColorMode}
+              activeOpacity={0.7}
+            >
+              <Box className="p-2.5 rounded-xl" style={{ backgroundColor: isDark ? '#161616' : '#F5F5F5' }}>
+                <Motion.View
+                  key={colorMode}
+                  initial={{ opacity: 0, rotate: '90deg', scale: 0.5 }}
+                  animate={{ opacity: 1, rotate: '0deg', scale: 1 }}
+                  transition={{ type: 'spring' }}
+                >
+                  {isDark ? (
+                    <Sun size={20} color="#00FF9C" />
+                  ) : (
+                    <Moon size={20} color="#00FF9C" />
+                  )}
+                </Motion.View>
+              </Box>
+            </TouchableOpacity>
+          </HStack>
+        </HStack>
+      </Box>
     </Motion.View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 0.5,
-    zIndex: 100,
-  },
-  content: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  logo: {
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: 2,
-  },
-  dot: {
-    color: '#00FF9C',
-  },
-  toggleBtn: {
-    padding: 10,
-    borderRadius: 12,
-  }
-});

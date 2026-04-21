@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { ForumComment } from './forum-comment.entity';
 
 @Entity('forum_posts')
 export class ForumPost {
@@ -28,4 +29,7 @@ export class ForumPost {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => ForumComment, (comment) => comment.post)
+  comments: ForumComment[];
 }

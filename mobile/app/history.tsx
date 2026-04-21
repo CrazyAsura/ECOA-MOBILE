@@ -1,19 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Motion } from '@legendapp/motion';
-import { CheckCircle2, Clock, AlertTriangle, MoreVertical, Trash2, Edit3, ChevronRight } from 'lucide-react-native';
+import { CheckCircle2, Clock, AlertTriangle, Trash2, Edit3 } from 'lucide-react-native';
 import api from '../services/api';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/context/ThemeContext';
+
+// Gluestack Components
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { HStack } from '@/components/ui/hstack';
+import { Heading } from '@/components/ui/heading';
+import { Divider } from '@/components/ui/divider';
 
 interface Complaint {
   id: string;
-  title: string;
+  type: string;
   location: string;
   status: string;
   createdAt: string;
 }
 
 export default function HistoryScreen() {
+  const { t } = useTranslation();
+  const { isDark } = useTheme();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -33,19 +45,19 @@ export default function HistoryScreen() {
 
   const handleDelete = (id: string) => {
     Alert.alert(
-      "Confirmar Exclusão",
-      "Tem certeza que deseja remover esta queixa?",
+      t('confirm_delete'),
+      t('delete_desc'),
       [
-        { text: "Cancelar", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         { 
-          text: "Excluir", 
+          text: t('delete'), 
           style: "destructive",
           onPress: async () => {
             try {
               await api.delete(`/complaints/${id}`);
               setComplaints(prev => prev.filter(c => c.id !== id));
             } catch (e) {
-              Alert.alert("Erro", "Não foi possível excluir.");
+              Alert.alert("Erro", t('error_delete'));
             }
           }
         }
@@ -55,71 +67,68 @@ export default function HistoryScreen() {
 
   const getStatusProps = (status: string) => {
     switch (status) {
-      case 'resolved': return { color: '#00FF9C', label: 'Resolvida', icon: CheckCircle2 };
-      case 'analyzing': return { color: '#FFD700', label: 'Em Análise', icon: Clock };
-      default: return { color: '#FF4B4B', label: 'Pendente', icon: AlertTriangle };
+      case 'resolved': return { color: '#00FF9C', label: t('status_resolved'), icon: CheckCircle2 };
+      case 'analyzing': return { color: '#FFD700', label: t('status_analyzing'), icon: Clock };
+      default: return { color: '#FF4B4B', label: t('status_pending'), icon: AlertTriangle };
     }
   };
 
-  if (loading) return <View style={styles.centered}><ActivityIndicator color="#00FF9C" size="large" /></View>;
+  if (loading) {
+    return (
+      <Box className={`flex-1 ${isDark ? 'bg-[#0A0A0A]' : 'bg-[#F8F9FA]'} items-center justify-center`}>
+        <ActivityIndicator color="#00FF9C" size="large" />
+      </Box>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Minhas Queixas</Text>
-      
-      <View style={styles.list}>
-        {complaints.map((item, index) => {
-          const status = getStatusProps(item.status);
-          return (
-            <Motion.View key={item.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <View style={styles.card}>
-                <TouchableOpacity 
-                   style={styles.cardMain} 
-                   // Force casting to any to satisfy Expo Router strict path typing
-                   onPress={() => router.push(`/complaint/${item.id}` as any)}
-                >
-                  <View style={[styles.statusLine, { backgroundColor: status.color }]} />
-                  <View style={styles.cardInfo}>
-                    <Text style={styles.cardTitle}>{item.title}</Text>
-                    <Text style={styles.cardLocal}>{item.location}</Text>
-                    <View style={styles.statusBadge}>
-                       <status.icon size={12} color={status.color} />
-                       <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+    <Box className={`flex-1 ${isDark ? 'bg-[#0A0A0A]' : 'bg-[#F8F9FA]'}`}>
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 150 }}>
+        <Heading className={`${isDark ? 'text-white' : 'text-black'} text-3xl font-bold mt-10 mb-8`}>{t('my_complaints')}</Heading>
+        
+        <VStack space="md">
+          {complaints.map((item) => {
+            const status = getStatusProps(item.status);
+            return (
+              <Motion.View key={item.id} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
+                <Box className={`${isDark ? 'bg-[#161616] border-[#222]' : 'bg-white border-[#EEE]'} rounded-[24px] border overflow-hidden flex-row shadow-sm`}>
+                  <Box className="w-1.5" style={{ backgroundColor: status.color }} />
+                  
+                  <HStack className="flex-1">
+                    <TouchableOpacity 
+                      className="flex-1 p-5"
+                      onPress={() => router.push(`/complaint/${item.id}` as any)}
+                    >
+                      <VStack space="xs">
+                        <Text className={`${isDark ? 'text-white' : 'text-black'} text-lg font-bold`} numberOfLines={1}>{item.type || 'Sem título'}</Text>
+                        <Text className={`${isDark ? 'text-[#666]' : 'text-[#888]'} text-sm`}>{item.location}</Text>
+                        
+                        <HStack className={`items-center gap-2 mt-3 ${isDark ? 'bg-white/5' : 'bg-black/5'} self-start px-3 py-1 rounded-lg`}>
+                          <status.icon size={12} color={status.color} />
+                          <Text className="text-xs font-bold" style={{ color: status.color }}>
+                            {status.label}
+                          </Text>
+                        </HStack>
+                      </VStack>
+                    </TouchableOpacity>
 
-                <View style={styles.cardActions}>
-                   <TouchableOpacity style={styles.actionIcon} onPress={() => {}}>
-                      <Edit3 size={18} color="#666" />
-                   </TouchableOpacity>
-                   <TouchableOpacity style={styles.actionIcon} onPress={() => handleDelete(item.id)}>
-                      <Trash2 size={18} color="#FF4B4B" />
-                   </TouchableOpacity>
-                </View>
-              </View>
-            </Motion.View>
-          );
-        })}
-      </View>
-    </ScrollView>
+                    <Divider orientation="vertical" className={`${isDark ? 'bg-[#222]' : 'bg-[#EEE]'} my-5`} />
+
+                    <VStack className="w-16 items-center justify-center gap-6">
+                      <TouchableOpacity onPress={() => {}}>
+                         <Edit3 size={18} color="#666" />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                         <Trash2 size={18} color="#FF4B4B" />
+                      </TouchableOpacity>
+                    </VStack>
+                  </HStack>
+                </Box>
+              </Motion.View>
+            );
+          })}
+        </VStack>
+      </ScrollView>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0A' },
-  centered: { flex: 1, backgroundColor: '#0A0A0A', justifyContent: 'center', alignItems: 'center' },
-  content: { padding: 24, paddingBottom: 150 },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#FFF', marginBottom: 30, paddingTop: 40 },
-  list: { gap: 16 },
-  card: { backgroundColor: '#161616', borderRadius: 24, flexDirection: 'row', overflow: 'hidden', borderWidth: 1, borderColor: '#222' },
-  cardMain: { flex: 1, flexDirection: 'row', padding: 20 },
-  statusLine: { width: 4, height: '100%', position: 'absolute', left: 0 },
-  cardInfo: { flex: 1 },
-  cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#FFF', marginBottom: 4 },
-  cardLocal: { fontSize: 13, color: '#666', marginBottom: 12 },
-  statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.02)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
-  statusText: { fontSize: 12, fontWeight: 'bold' },
-  cardActions: { width: 60, justifyContent: 'center', alignItems: 'center', gap: 15, borderLeftWidth: 1, borderLeftColor: '#222' },
-  actionIcon: { padding: 8 }
-});
