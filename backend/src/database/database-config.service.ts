@@ -31,6 +31,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
           autoLoadEntities: true,
           synchronize: true,
           logging: false,
+          ssl: dbUrl ? { rejectUnauthorized: false } : false,
         };
       } else {
         this.logger.warn(`⚠️ PostgreSQL não respondeu em ${dbHost}:${dbPort}`);
