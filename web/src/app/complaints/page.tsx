@@ -8,7 +8,8 @@ import api from '@/services/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ShieldAlert, Calendar, User } from 'lucide-react';
-import { FixedSizeGrid } from 'react-window';
+import { Grid } from 'react-window';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type ComplaintItem = {
   id: string;
@@ -113,16 +114,14 @@ export default function ComplaintsPage() {
           </div>
         ) : (
           <div ref={containerRef} className="w-full mb-20">
-            <FixedSizeGrid
+            <Grid
               columnCount={columnCount}
               columnWidth={itemWidth}
-              height={rowCount * itemHeight}
               rowCount={rowCount}
               rowHeight={itemHeight}
-              width={containerWidth}
-            >
-              {Cell}
-            </FixedSizeGrid>
+              cellComponent={Cell}
+              cellProps={{} as any}
+            />
           </div>
         )}
       </div>
