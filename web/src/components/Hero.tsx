@@ -10,28 +10,28 @@ import Link from 'next/link';
 
 const slides = [
   { 
-    img: "/assets/aracaju_hero_cinematic_1776817029690.png", 
-    tag: "Nordeste", 
-    title: "Onde Tudo Começou",
-    desc: "Monitoramento inteligente na Orla de Atalaia. Transformando o engajamento social em resultados reais para Sergipe."
-  },
-  { 
-    img: "/assets/brazil_rio_cinematic_1776817729224.png", 
+    img: "/assets/rio_de_janeiro.jpg", 
     tag: "Sudeste", 
-    title: "Vigilância Urbana",
-    desc: "A tecnologia protegendo a Cidade Maravilhosa. Segurança comunitária com análise de IA em tempo real."
+    title: "Rio de Janeiro",
+    desc: "A Cidade Maravilhosa sob monitoramento inteligente. Segurança e tecnologia integradas para proteger nossos cartões-postais."
   },
   { 
-    img: "/assets/brazil_brasilia_cinematic_1776818590254.png", 
-    tag: "Centro-Oeste", 
-    title: "Eixo de Transparência",
-    desc: "No coração do poder, a voz do povo ecoa mais forte. Fiscalização pública com precisão absoluta no Distrito Federal."
-  },
-  { 
-    img: "/assets/brazil_amazon_cinematic_1776817751106.png", 
+    img: "/assets/amazon_forest.jpg", 
     tag: "Norte", 
-    title: "Preservação Ativa",
-    desc: "Inteligência artificial servindo ao pulmão do mundo. Protegendo a Amazônia através de alertas geo-espaciais."
+    title: "Amazônia Viva",
+    desc: "Inteligência artificial servindo ao pulmão do mundo. Monitoramento em tempo real para a preservação da nossa biodiversidade."
+  },
+  { 
+    img: "/assets/salvador_bahia.jpg", 
+    tag: "Nordeste", 
+    title: "Cultura e História",
+    desc: "Preservando o patrimônio histórico de Salvador com vigilância avançada. A tradição baiana protegida pela inovação."
+  },
+  { 
+    img: "/assets/iguazu_falls.jpg", 
+    tag: "Sul", 
+    title: "Foz do Iguaçu",
+    desc: "A força das águas monitorada com precisão. Tecnologia de ponta garantindo a segurança em nossas fronteiras naturais."
   }
 ];
 
@@ -47,13 +47,13 @@ export const Hero = () => {
           {slides.map((slide, i) => (
             <CarouselItem key={i} className="relative h-screen p-0 border-none shrink-0 group">
               {/* Background */}
-              <div 
-                className="absolute inset-0 bg-cover bg-center scale-105 group-data-[active=true]:scale-100 transition-transform duration-[8000ms] ease-out"
+              <motion.div 
+                className="absolute inset-0 bg-cover bg-center duration-8000 transition-transform group-hover:scale-110"
                 style={{ backgroundImage: `url(${slide.img})` }}
               />
               {/* Overlays */}
               <div className="absolute inset-0 bg-black/60 z-10" />
-              <div className="absolute inset-0 bg-gradient-to-b from-background via-black/20 to-background z-10" />
+              <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/80 z-10" />
               
               {/* Content */}
               <div className="relative z-20 h-full flex flex-col items-center justify-center text-center px-6">
@@ -92,7 +92,7 @@ export const Hero = () => {
       </Carousel>
       
       {/* Decorative Grid */}
-      <div className="absolute inset-0 z-10 opacity-10 pointer-events-none bg-[radial-gradient(#20c997_1px,transparent_1px)] [background-size:40px_40px]" />
+      <div className="absolute inset-0 opacity-20 pointer-events-none bg-size-[40px_40px] bg-[radial-gradient(circle_at_center,rgba(32,201,151,0.15)_1px,transparent_1px)]" />
       
       {/* Slide Indicators Teaser */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-12 opacity-30">

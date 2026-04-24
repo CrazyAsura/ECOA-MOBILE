@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 @import "tw-animate-css";
 
@@ -117,7 +118,7 @@
 
   .grain::after {
     content: "";
-    @apply fixed inset-0 z-[9999] pointer-events-none opacity-[0.03];
+    @apply fixed inset-0 z-9999 pointer-events-none opacity-[0.03];
     background-image: url("https://grainy-gradients.vercel.app/noise.svg");
   }
 

@@ -20,7 +20,7 @@ export default function AboutPage() {
       {/* Cinematic Hero */}
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-[url('/assets/brazil_amazon_cinematic_1776817751106.png')] bg-cover bg-center brightness-50" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black" />
         
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
@@ -86,3 +86,5 @@ export default function AboutPage() {
     </main>
   );
 }
+
+

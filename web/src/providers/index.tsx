@@ -5,6 +5,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from '@/store';
 import React, { useState } from 'react';
+import { AuthProvider } from '@/context/AuthContext';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -22,7 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ReduxProvider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <QueryClientProvider client={queryClient}>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </QueryClientProvider>
       </PersistGate>
     </ReduxProvider>

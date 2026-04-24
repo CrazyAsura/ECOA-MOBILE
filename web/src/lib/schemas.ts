@@ -15,3 +15,21 @@ export const complaintSchema = z.object({
 });
 
 export type ComplaintFormValues = z.infer<typeof complaintSchema>;
+
+export const registerSchema = z.object({
+  name: z.string().min(2, { message: "Nome deve ter pelo menos 2 caracteres" }),
+  email: z.string().email({ message: "Email inválido" }),
+  password: z.string().min(6, { message: "Senha deve ter pelo menos 6 caracteres" }),
+  confirmPassword: z.string().min(6, { message: "Confirmação de senha deve ter pelo menos 6 caracteres" }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Senhas não coincidem",
+  path: ["confirmPassword"],
+});
+
+export type RegisterFormValues = z.infer<typeof registerSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: "Email inválido" }),
+});
+
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;

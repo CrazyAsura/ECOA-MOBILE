@@ -67,7 +67,7 @@ export default function ComplaintsPage() {
                 <ShieldAlert className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
               <h3 className="text-lg font-bold uppercase mb-2 line-clamp-1">{item.title}</h3>
-              <p className="text-muted-foreground text-sm italic mb-6 line-clamp-2 flex-grow">{item.description}</p>
+              <p className="text-muted-foreground text-sm italic mb-6 line-clamp-2 grow">{item.description}</p>
               
               <div className="flex items-center justify-between pt-4 border-t border-white/5 text-[10px] uppercase font-bold text-muted-foreground mt-auto">
                 <div className="flex items-center gap-2">
@@ -87,9 +87,9 @@ export default function ComplaintsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="flex flex-col min-h-screen pt-20">
       <Header />
-      <div className="container mx-auto pt-32 px-6">
+      <div className="container mx-auto px-6 py-12 grow">
         <header className="mb-12">
           <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter mb-4 text-glow">Queixas <span className="text-primary">Globais</span></h1>
           <p className="text-muted-foreground uppercase tracking-widest text-xs font-bold">Monitoramento de incidentes em tempo real</p>
@@ -128,3 +128,5 @@ export default function ComplaintsPage() {
     </main>
   );
 }
+
+

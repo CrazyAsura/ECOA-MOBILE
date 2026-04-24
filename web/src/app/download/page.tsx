@@ -89,7 +89,7 @@ export default function DownloadPage() {
              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-[500px] bg-primary/20 blur-[100px] rounded-full animate-pulse" />
              
              {/* Phone Body */}
-             <div className="w-[320px] h-[640px] mx-auto bg-zinc-950 border-[10px] border-zinc-900 rounded-[3.5rem] shadow-2xl relative overflow-hidden ring-1 ring-white/5">
+             <div className="w-[320px] h-[640px] mx-auto bg-zinc-950 border-10 border-zinc-900 rounded-[3.5rem] shadow-2xl relative overflow-hidden ring-1 ring-white/5">
                 {/* Notch */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-zinc-900 rounded-b-2xl z-20" />
                 
@@ -139,3 +139,5 @@ export default function DownloadPage() {
     </main>
   );
 }
+
+

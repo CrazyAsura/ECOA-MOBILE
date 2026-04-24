@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { Features } from "@/components/Features";
+import { BrazilGallery } from "@/components/BrazilGallery";
 import { useStats } from "@/hooks/useStats";
 import { Button } from "@/components/ui/button";
 import { VerticalTicker } from "@/components/VerticalTicker";
@@ -32,6 +33,9 @@ export default function Home() {
       <div className="py-20 relative z-10">
         <Features />
       </div>
+
+      {/* Brazil Gallery - Visual showcase */}
+      <BrazilGallery />
 
       {/* Horizontal Scroll Stories - The cinematic soul of the site */}
       <HorizontalStories />
@@ -64,7 +68,7 @@ export default function Home() {
 
       {/* Final Galactic Call to Action */}
       <section className="py-40 bg-background relative overflow-hidden border-t border-white/5">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-40" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-40" />
         <div className="container relative z-10 mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -86,3 +90,5 @@ export default function Home() {
     </main>
   );
 }
+
+
